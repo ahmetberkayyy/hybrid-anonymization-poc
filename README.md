@@ -44,6 +44,17 @@ Yeni bir bilgisayarda Python 3.12 sanal ortamı oluşturup `pip install -e '.[pr
 
 `HF_HOME` model önbelleğini proje içindeki `.model_cache` dizinine yönlendirir. `HF_HUB_OFFLINE=1` hazır NER ve GLiNER modellerinin ağ bağlantısı aramadan açılmasını sağlar. Yeni ağırlık indirmek gerektiğinde bu son değişkeni kaldırın. Önbellek sürüm kontrolü dışında tutulur.
 
+## Analiz notebook'u
+
+Veri dağılımını, modül ve entity bazlı ölçümleri, hibrit pipeline sonucunu ve tüm maskelenmiş çıktıları görmek için `notebooks/hybrid_anonymization_analysis.ipynb` dosyasını kullanın. Gerekli analiz paketlerini kurup JupyterLab'i başlatmak için:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e '.[presidio,models,analysis]'
+.\.venv\Scripts\python.exe -m jupyter lab
+```
+
+Notebook varsayılan olarak `data/*.jsonl` dosyalarını okur. Veri setine yeni satır veya yeni JSONL dosyası eklendiğinde tablolar ve grafikler otomatik güncellenir. Üretilen CSV ve maskelenmiş JSONL çıktıları Git takibinin dışındaki `outputs/notebook_analysis/` klasörüne yazılır.
+
 `--masker presidio` seçeneği, birleştirilmiş span'ları Presidio Anonymizer'ın varsayılan `replace` operatörüne verir. Böylece tespit katmanı ile anonimleştirme katmanı ayrı ayrı denenebilir.
 
 `scripts/benchmark.py` paket sürümlerini ve ölçümleri `docs/benchmark_results.json` dosyasına yazar; kurulu olmayan bileşenleri başarısız olarak kaydeder. `--include-models` bütün koşuları çalıştırır. Kurulu CPU PyTorch sürümü ekran kartını kullanmaz; GPU performansı bu PoC'ta ölçülmedi.
