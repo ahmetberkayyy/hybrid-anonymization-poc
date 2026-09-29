@@ -1,0 +1,29 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.model_cache/
+models/
+data/private/
+data/raw/
+outputs/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+secrets.*
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Private/reference documents
+*.docx
+
+# Local tooling and generated files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

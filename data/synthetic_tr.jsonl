@@ -1,0 +1,17 @@
+{"id": "demo_invalid_tckn", "text": "Ahmet Yılmaz'ın TC kimlik numarası 12345678901 ve plakası 34 ABC 123'tür.", "entities": [{"start": 0, "end": 12, "label": "PERSON"}, {"start": 35, "end": 46, "label": "TCKN"}, {"start": 58, "end": 68, "label": "VEHICLE_PLATE"}]}
+{"id": "valid_tckn", "text": "Ayşe Demir'in TCKN 10000000146 olarak kaydedildi.", "entities": [{"start": 0, "end": 10, "label": "PERSON"}, {"start": 19, "end": 30, "label": "TCKN"}]}
+{"id": "contact", "text": "İletişim: deniz.kaya@example.com, 0532 123 45 67.", "entities": [{"start": 10, "end": 32, "label": "EMAIL"}, {"start": 34, "end": 48, "label": "PHONE"}]}
+{"id": "iban", "text": "Ödeme IBAN: TR33 0006 1005 1978 6457 8413 26 hesabına yapılacak.", "entities": [{"start": 12, "end": 44, "label": "IBAN"}]}
+{"id": "insurance_ids", "text": "Poliçe POL-2026-000123 ve hasar HSR-2026-456789 dosyası açıldı.", "entities": [{"start": 7, "end": 22, "label": "POLICY_NUMBER"}, {"start": 32, "end": 47, "label": "CLAIM_NUMBER"}]}
+{"id": "address", "text": "İkamet adresi: Atatürk Mahallesi No: 12/4, Ankara.", "entities": [{"start": 15, "end": 41, "label": "ADDRESS"}]}
+{"id": "health", "text": "Sigortalının diyabet tanısı var ve insülin kullanıyor.", "entities": [{"start": 13, "end": 20, "label": "HEALTH_INFORMATION"}, {"start": 35, "end": 42, "label": "HEALTH_INFORMATION"}]}
+{"id": "alcohol", "text": "Sürücünün 0,82 promil alkollü olduğu görüldü.", "entities": [{"start": 10, "end": 21, "label": "BAC_VALUE"}, {"start": 22, "end": 29, "label": "HEALTH_INFORMATION"}]}
+{"id": "medical_test", "text": "Kanında etanol saptandı, engellilik oranı %40.", "entities": [{"start": 8, "end": 14, "label": "HEALTH_INFORMATION"}, {"start": 25, "end": 35, "label": "HEALTH_INFORMATION"}]}
+{"id": "invalid_tckn_negative", "text": "Sipariş referansı 12345678901 teslim edildi.", "entities": []}
+{"id": "invalid_iban_negative", "text": "Hatalı hesap kodu TR00 0000 0000 0000 0000 0000 00 yazıldı.", "entities": []}
+{"id": "no_entity", "text": "Poliçe kapsamı ve teminat koşulları görüşüldü.", "entities": []}
+{"id": "plate_and_claim", "text": "34 ABC 123 plakalı araç için HAS/2026/12345 kaydı var.", "entities": [{"start": 0, "end": 10, "label": "VEHICLE_PLATE"}, {"start": 29, "end": 43, "label": "CLAIM_NUMBER"}]}
+{"id": "free_person", "text": "Eksper Mehmet Aksoy raporu inceledi.", "entities": [{"start": 7, "end": 19, "label": "PERSON"}]}
+{"id": "alternative_policy", "text": "Poliçe numarası 2026/AB/12345 iptal edildi.", "entities": [{"start": 16, "end": 29, "label": "POLICY_NUMBER"}]}
+{"id": "indirect_health", "text": "Sigortalı düzenli olarak kan şekeri ölçümü yapıyor.", "entities": [{"start": 25, "end": 42, "label": "HEALTH_INFORMATION"}]}
+{"id": "medical_measurement", "text": "Laboratuvar sonucunda HbA1c 8.7 görüldü.", "entities": [{"start": 22, "end": 31, "label": "HEALTH_INFORMATION"}]}
