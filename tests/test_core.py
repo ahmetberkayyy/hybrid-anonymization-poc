@@ -8,7 +8,7 @@ from hybrid_anon.pipeline import anonymize, merge_spans
 from hybrid_anon.entities import EntitySpan
 from hybrid_anon.rules import valid_tckn, valid_iban, valid_structured_candidate
 from hybrid_anon.model_adapters import detect_gliner, detect_ner
-from hybrid_anon.local_llm import local_ollama_review, needs_review
+from hybrid_anon.local_llm import SCHEMA, local_ollama_review, needs_review
 
 
 class CoreTests(unittest.TestCase):
@@ -65,13 +65,22 @@ class CoreTests(unittest.TestCase):
         text = "Sigortalının HbA1c 8.7 sonucu var."
         payload = {"response": json.dumps({"entities": [
             {"quote": "HbA1c 8.7", "label": "HEALTH_INFORMATION"},
+            {"quote": "Sigortalının", "label": "PERSON"},
             {"quote": "olmayan ifade", "label": "PERSON"}]})}
         with patch("hybrid_anon.local_llm.urlopen",
-                   return_value=BytesIO(json.dumps(payload).encode())):
+                   return_value=BytesIO(json.dumps(payload).encode())) as mocked_urlopen:
             spans = local_ollama_review(text, "local-model")
         self.assertTrue(needs_review(text))
         self.assertEqual([(s.start, s.end, s.label) for s in spans],
                          [(13, 22, "HEALTH_INFORMATION")])
+        sent_payload = json.loads(mocked_urlopen.call_args.args[0].data.decode("utf-8"))
+        self.assertFalse(sent_payload["think"])
+        self.assertEqual(sent_payload["format"], SCHEMA)
+
+    def test_local_llm_review_cues_accept_turkish_suffixes(self):
+        self.assertTrue(needs_review("Sigortalının diyabet tanısı var."))
+        self.assertTrue(needs_review("Sürücünün 0,82 promil alkollü olduğu görüldü."))
+        self.assertTrue(needs_review("Eksper Mehmet Aksoy raporu inceledi."))
 
     @unittest.skipUnless(importlib.util.find_spec("presidio_analyzer"), "Presidio kurulu değil")
     def test_presidio_custom_detection_and_masking(self):

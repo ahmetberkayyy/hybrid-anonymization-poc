@@ -61,6 +61,22 @@ Notebook varsayılan olarak `data/*.jsonl` dosyalarını okur. Veri setine yeni 
 
 Yerel bir Ollama sunucusu ve onaylı model varsa `--local-llm-model MODEL_ADI` ile ikinci kontrol açılabilir. Bu kontrol yalnız risk işareti taşıyan metinlerde çalışır; modelin ürettiği konumlara güvenmez ve yalnız metinde tek kez birebir bulunan alıntıları kabul eder. Doğrulanmış kural tespitleri LLM kararıyla kaldırılmaz.
 
+Windows üzerinde yerel Qwen3 4B ikinci kontrolünü açmak için Ollama'yı kurduktan sonra modeli indirin:
+
+```powershell
+irm https://ollama.com/install.ps1 | iex
+ollama pull qwen3:4b
+ollama run qwen3:4b
+```
+
+Yerel LLM katmanını tek sentetik metinle doğrulamak için:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\local_llm_smoke.py --model qwen3:4b
+```
+
+CLI kullanımında `--local-llm-model qwen3:4b`, analiz notebook'unda ise `LOCAL_LLM_MODEL = "qwen3:4b"` kullanılır. Entegrasyon Ollama'nın yalnız yerel `127.0.0.1:11434` API'sine bağlanır, JSON şemalı çıktı ister ve Qwen3 düşünme çıktısını kapatır. İlk model yüklemesi için varsayılan zaman aşımı 180 saniyedir; gerekirse `ANON_OLLAMA_TIMEOUT` ortam değişkeniyle artırılabilir.
+
 Örnek çıktıda son ek kaynak metinden korunur: `<VEHICLE_PLATE>'tür`. İstekteki `<VEHICLE_PLATE>'dir` biçimi, Türkçe ekin ayrıca yeniden üretilmesini gerektirir; PoC metni gereksiz yere değiştirmemek için bunu yapmaz. `12345678901` matematiksel olarak geçersiz TCKN'dir; yalnız açık “TC kimlik” bağlamı sayesinde maskelenir.
 
 ## Veri ve ölçüm
