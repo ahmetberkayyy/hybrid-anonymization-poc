@@ -50,8 +50,8 @@ Türkçe sigortacılık metnindeki doğrudan tanımlayıcıları ve bağlama ba�
 
 ## İlerleme durumu
 
-- Tamamlandı: sentetik 17 örnek ve 23 span, regex/doğrulama akışı, çakışma çözümü, maskeleme, CLI, temel testler, mimari ve kaynaklı karşılaştırma.
+- Tamamlandı: sentetik 110 örnek ve 121 span, regex/doğrulama akışı, çakışma çözümü, maskeleme, CLI, temel testler, mimari ve kaynaklı karşılaştırma.
 - Tamamlandı: Presidio 2.2.364 ile custom recognizer, Presidio Anonymizer ve regex+Presidio karşılaştırması.
 - Tamamlandı: ModernBERT-TR PII ağırlıklarıyla Türkçe NER ve regex+Presidio+NER ölçümü; yapısal model çıktısı doğrulaması ve çakışma düzeltmesi.
-- Tamamlandı: GLiNER multilingual v2.1 ve dört katmanlı hibrit ölçümü; 17 sentetik örnekte yöntem ve hata karşılaştırması.
+- Tamamlandı: GLiNER multilingual v2.1 ve dört katmanlı hibrit ölçümü; genişletilmiş sentetik test kümesinde yöntem ve hata karşılaştırması.
 - Sonraki adım: bağımsız, kör Türkçe test kümesi; hedef ortamda GPU/bellek ölçümü; kurum poliçe biçimleri; yerel LLM modeli sağlanırsa gerçek ikinci kontrol deneyi.

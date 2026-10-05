@@ -2,49 +2,89 @@
 
 ## Ortam ve yöntem
 
-- Tarih: 28–29 Eylül 2026
-- Ortam: Windows 11, Python 3.12.14 sanal ortamı. Standart kütüphane testleri ayrıca Python 3.14.2 ile çalıştı.
-- Ekran kartı: NVIDIA GeForce RTX 3060 Laptop GPU, 6 GiB VRAM (`nvidia-smi`). Kurulu PyTorch 2.14.0+cpu sürümü CUDA kullanmıyor; NER ölçümü CPU ile yapıldı.
-- Veri: `data/synthetic_tr.jsonl`; 17 sentetik metin, 23 etiketli span. Geliştirme veri setidir; bağımsız test değildir.
-- Ölçü: başlangıç, bitiş ve entity adının tam eşleşmesi. Aynı veri ve eşik (`0.5`) bütün motorlar için kullanılacaktır.
+- Son ölçüm: 2 Ekim 2026.
+- Ortam: Windows 11 ve Python 3.12 sanal ortamı.
+- Ekran kartı: NVIDIA GeForce RTX 3060 Laptop GPU, 6 GiB VRAM. Mevcut PyTorch kurulumu CPU sürümüdür; NER ve GLiNER ölçümleri CPU üzerinde yapılmıştır.
+- Veri: `data/synthetic_tr.jsonl`; 110 sentetik metin, 121 etiketli span, 92 pozitif ve 18 negatif örnek.
+- Sınıflar: PERSON, TCKN, IBAN, PHONE, EMAIL, VEHICLE_PLATE, POLICY_NUMBER, CLAIM_NUMBER, ADDRESS, HEALTH_INFORMATION ve BAC_VALUE.
+- Ölçü: `start`, `end` ve entity sınıfının tam eşleşmesi. Kısmi span eşleşmesi doğru sayılmaz.
+- Ortak kabul eşiği: `0.5`.
+- Bu küme geliştirme sırasında görüldüğü için bağımsız veya kör test kümesi değildir.
 
-| Motor | Durum | TP | FP | FN | Precision | Recall | F1 | Not |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| Regex/kurallar | Çalıştırıldı | 19 | 0 | 4 | 1.000 | 0.826 | 0.905 | Dar bağlam dışındaki 4 örneği kaçırdı |
-| Presidio custom recognizer | Çalıştırıldı | 10 | 0 | 13 | 1.000 | 0.435 | 0.606 | Yalnız yapısal desenler tanımlı; sürüm 2.2.364 |
-| Regex + Presidio | Çalıştırıldı | 19 | 0 | 4 | 1.000 | 0.826 | 0.905 | Bu küçük kümede Presidio kural dışı yeni span eklemedi |
-| ModernBERT-TR PII NER + format kontrolü | Çalıştırıldı | 7 | 2 | 16 | 0.778 | 0.304 | 0.438 | CPU; tam span eşleşmesi |
-| Regex + Presidio + Türkçe NER | Çalıştırıldı | 19 | 0 | 4 | 1.000 | 0.826 | 0.905 | Kural span'larını koruyan çakışma önceliği |
-| GLiNER multilingual v2.1 + format kontrolü | Çalıştırıldı | 10 | 2 | 13 | 0.833 | 0.435 | 0.571 | CPU; özel label'lar; doğrulama sonrası |
-| Regex + Presidio + Türkçe NER + GLiNER | Çalıştırıldı | 22 | 0 | 1 | 1.000 | 0.957 | 0.978 | Geliştirme kümesinde ayarlanmış kurallar |
-| Yerel LLM ikinci kontrol | Adapter sahte yanıtla doğrulandı; model çalıştırılmadı | — | — | — | — | — | — | Yerel model/uç nokta sağlanmadı |
+## Veri dağılımı
+
+| Entity | Altın etiket |
+|---|---:|
+| HEALTH_INFORMATION | 22 |
+| PERSON | 17 |
+| POLICY_NUMBER | 11 |
+| VEHICLE_PLATE | 10 |
+| PHONE | 10 |
+| CLAIM_NUMBER | 10 |
+| ADDRESS | 10 |
+| TCKN | 9 |
+| EMAIL | 9 |
+| IBAN | 7 |
+| BAC_VALUE | 6 |
+| **Toplam** | **121** |
+
+Veri setinde boşluklu ve bitişik biçimler, Türkçe ekler, büyük/küçük harf çeşitleri, üç sözcüklü kişi adları, farklı poliçe ve hasar numarası biçimleri, dolaylı sağlık anlatımları, birden fazla entity içeren sigorta notları ve yanlış pozitifleri ölçen zor negatifler bulunur.
+
+## Modül sonuçları
+
+| Motor | TP | FP | FN | Precision | Recall | F1 | Süre (sn) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Regex/kurallar | 80 | 9 | 41 | 0.899 | 0.661 | 0.762 | 0.005 |
+| Presidio custom recognizer | 63 | 0 | 58 | 1.000 | 0.521 | 0.685 | 9.262 |
+| Regex + Presidio | 80 | 9 | 41 | 0.899 | 0.661 | 0.762 | 0.014 |
+| ModernBERT-TR PII NER + format kontrolü | 27 | 17 | 94 | 0.614 | 0.223 | 0.327 | 5.700 |
+| Regex + Presidio + Türkçe NER | 88 | 14 | 33 | 0.863 | 0.727 | 0.789 | 5.602 |
+| GLiNER multilingual v2.1 + format kontrolü | 46 | 21 | 75 | 0.687 | 0.380 | 0.489 | 19.718 |
+| **Regex + Presidio + Türkçe NER + GLiNER** | **100** | **20** | **21** | **0.833** | **0.826** | **0.830** | **19.562** |
+| Yerel LLM ikinci kontrol | Model kurulumu bekleniyor | — | — | — | — | — | — |
+
+Makine tarafından üretilen ayrıntılı sonuç `docs/benchmark_results.json` dosyasındadır. Süreler koşu sırasından, model önbelleğinden ve ilk yükleme maliyetinden etkilenir; üretim gecikmesi ölçümü olarak değerlendirilmemelidir.
+
+## Tam hibrit entity sonuçları
+
+| Entity | TP | FP | FN | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| ADDRESS | 3 | 12 | 7 | 0.200 | 0.300 | 0.240 |
+| BAC_VALUE | 6 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| CLAIM_NUMBER | 9 | 0 | 1 | 1.000 | 0.900 | 0.947 |
+| EMAIL | 9 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| HEALTH_INFORMATION | 11 | 7 | 11 | 0.611 | 0.500 | 0.550 |
+| IBAN | 7 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| PERSON | 16 | 1 | 1 | 0.941 | 0.941 | 0.941 |
+| PHONE | 10 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| POLICY_NUMBER | 10 | 0 | 1 | 1.000 | 0.909 | 0.952 |
+| TCKN | 9 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| VEHICLE_PLATE | 10 | 0 | 0 | 1.000 | 1.000 | 1.000 |
 
 ## Gözlemler
 
-- İlk ölçümde boşluklu IBAN desenindeki hane sayısı nedeniyle 1 kaçırma vardı; desen düzeltildi. Daha zor 4 örnek eklenince kural katmanı 23 etiketin 19'unu buldu.
-- Kaçırılanlar: bağlamsız kişi adı, kuruma özgü alternatif poliçe biçimi, dolaylı sağlık ifadesi ve HbA1c ölçümü. Model katmanlarının katacağı değeri bu örnekler sınayacak.
-- İstekteki `12345678901` geçerli TCKN değildir. Açık “TC kimlik” bağlamında maskeleme yapılıyor; bağlamsız aynı sayı maskelenmiyor.
-- Kişi adı kuralı yalnız belirli “Ad Soyad'ın TCKN...” biçimini yakalıyor. Sağlık sözlüğü dolaylı durum anlatımını anlayamaz.
-- Maskelenen span'dan sonraki Türkçe ek korunuyor. Örnekteki plaka son eki kaynak metindeki gibi `'tür` kalıyor.
-- Skorlar çok küçük ve kolay sentetik kümeye ait olduğundan model karşılaştırması veya üretim doğruluğu olarak kullanılmamalı.
-- Presidio 2.2.364 ile ilk çalıştırma, `NoOpNlpEngine` için `models` konfigürasyonu eksik olduğundan hata verdi. Türkçe için açık boş NLP konfigürasyonu eklenince analyzer çalıştı.
-- Presidio Anonymizer `replace` operatörüyle örnek metin maskelendi. Presidio-only koşusu kişi/adres/sağlık kurallarını içermediği için regex-only koşusundan düşük kapsamlıdır; bu sayılar Presidio ürününün genel kalitesini sıralamaz.
-- `benchmark_results.json` süreleri bütün 17 metnin tek işlemde çalışmasına aittir: regex 0.001 sn, Presidio ilk yükleme dahil 1.415 sn, ardından regex+Presidio önbellek ısınmışken 0.002 sn. Bu sıra ve önbellek etkisi nedeniyle donanım/üretim gecikme karşılaştırması değildir.
-- ModernBERT-TR PII ağırlıkları 29 Eylül'de indirildi ve 17 örneğin tamamında çalıştırıldı. İlk format filtresi öncesinde 7 TP, 4 FP, 16 FN görüldü. Kısmi e-posta ve geçersiz IBAN parçaları gibi yapısal hatalar filtrelenince FP 2'ye düştü. Kişi ve sağlık ifadelerinde kaçırmalar sürdü.
-- İlk birleşik koşuda NER'ın eksik adres span'ı kuralın tam span'ını bastırdı ve sonuç 18 TP'ye geriledi. Kaynak önceliği düzeltildikten sonra birleşim 19 TP'ye döndü; bu veri setinde NER yeni doğru span katmadı.
-- Kurulu sürümler: GLiNER 0.2.29, Transformers 5.16.1 ve PyTorch 2.14.0+cpu. İlk GLiNER indirme denemesi otomatik onay incelemesinin kullanım sınırına takıldı; bildirilen yeniden deneme saatinden sonra indirme ve gerçek ölçüm tamamlandı.
+- İlk 17 örnekteki 0.978 hibrit F1 skoru kolay ve küçük geliştirme kümesinden kaynaklanıyordu. Çeşitlilik ve zor negatifler eklendiğinde hibrit F1 0.830 oldu; bu daha gerçekçi bir PoC sinyalidir.
+- TCKN, IBAN, telefon, e-posta, plaka, promil ve standart kurum numarası biçimlerinde doğrulamalı kurallar güçlü sonuç verdi.
+- En büyük açık ADDRESS sınıfıdır. Modeller tam adres yerine il, ilçe veya cümlenin daha geniş/dar parçalarını seçebildiği için tam span metriğinde 12 FP ve 7 FN oluştu.
+- HEALTH_INFORMATION sınıfında sözlük terimleri yüksek kesinlik sağlarken dolaylı hastalık, ilaç, test sonucu ve tedavi anlatımları kaçırıldı. Genel sağlık cümleleri de yanlış pozitif üretebildi.
+- Presidio custom recognizer yanlış pozitif üretmedi ancak yalnız tanımlı yapısal desenleri kapsadığı için recall 0.521'de kaldı.
+- ModernBERT kişi ve bazı yapısal PII sınıflarında katkı sağladı; sigortacılığa özel numaralar ile geniş sağlık sınıfında düşük kapsam gösterdi.
+- GLiNER kişi ve semantik sınıflarda yeni doğru span'lar ekledi, ancak adres ve sağlık ifadelerinde sınır/sınıf hataları nedeniyle 22 yanlış pozitif üretti.
+- Tam hibrit yapı 121 altın etiketin 100'ünü buldu. Çakışma çözümü yapısal ve kural tabanlı span'ları koruduğu için tek başına model koşularından daha dengeli sonuç verdi.
+- `12345678901` matematiksel olarak geçerli TCKN değildir. Açık “TC kimlik” bağlamında hassas değer olarak maskelenir; bağlamsız kullanım negatif örnektir.
+- Veri üreticisi checksum geçerli sentetik TCKN ve IBAN biçimleri üretir, benzersiz ID ve konumları doğrular. Dataset testleri her entity sınıfı için minimum örnek sayısını korur.
 
-### 29 Eylül GLiNER devamı
+## Yerel LLM durumu
 
-- Otomatik onay incelemesinin bildirdiği yeniden deneme saatinden sonra GLiNER ağırlıkları indirildi. İlk yükleme eksik `protobuf` nedeniyle durdu; bağımlılık eklendikten sonra model gerçek metinde ve 17 örneğin tamamında çalıştı.
-- İlk GLiNER koşusu 10 TP, 8 FP, 13 FN; ilk tam hibrit koşusu 20 TP, 6 FP, 3 FN verdi. `Sigortalı`/`Sürücü` gibi rol adlarını `PERSON`, “kan şekeri” ve engellilik oranını `BAC_VALUE` sayma hataları görüldü.
-- Model kaynaklı `PERSON` için çok sözcüklü özel ad koşulu, `BAC_VALUE` için promil biçimi doğrulaması ve bilinen sağlık terimlerinde kural span önceliği eklendi. Sonuçlar tabloda gösterilmiştir. Bunlar aynı geliştirme veri setinden öğrenilen kararlar olduğu için bağımsız başarı tahmini değildir.
-- Son hibrit koşusunda tek kaçırılan span “kan şekeri ölçümü” idi. Bu, dolaylı sağlık bilgisinin hâlâ eksik kaldığını gösterir.
-- GLiNER yüklenirken Transformers, `mdeberta-v3-base` tokenizer'ının regex örüntüsü için uyarı verdi. Model çalıştı; tokenizer uyumluluğu ve farklı sürümle sonuç değişimi ayrıca doğrulanmalıdır.
+Qwen3 4B için adapter hazırdır. İkinci kontrol yalnız risk işareti taşıyan metinlerde çalışır, JSON şemalı yanıt ister, düşünme çıktısını kapatır ve yalnız kaynak metinde tek kez birebir bulunan alıntıları kabul eder. “Sigortalı”, “sürücü”, “eksper” ve “doktor” gibi roller PERSON olarak kod seviyesinde reddedilir.
+
+Ollama ve `qwen3:4b` ağırlığı henüz kurulmadığı için gerçek local LLM TP/FP/FN ölçümü rapora eklenmemiştir. Model kurulduğunda analiz notebook'u local LLM'yi bağımsız ve hibrit koşuda ayrı ölçer.
 
 ## Sonraki deney kapıları
 
-1. En az 100 ayrı, kör ve farklı yazım biçimli Türkçe örnekle sonucu yeniden sınamak; kurum verisi kullanılacaksa kontrollü etiketleme yapmak.
-2. Sağlık ve alkol için kişiyle ilişkili durum ile genel bilgi ayrımını; poliçe/hasar için gerçek kurum formatlarını eklemek.
-3. GPU destekli PyTorch ve tokenizer uyumluluğunu hedef ortamda sınayıp soğuk/ısınmış gecikme ile RAM/VRAM tüketimini ölçmek.
-4. Yerel LLM modeli sağlandığında adapter ile ikinci kontrolü ölçmek; span sınırı metinden tekrar doğrulansın, ham metin kurum dışına çıkmasın.
+1. Qwen3 4B kurulduktan sonra local LLM bağımsız ve hibrit ölçümlerini kaydetmek.
+2. ADDRESS için adres sınırı normalizasyonu ve il/ilçe/sokak bileşenlerini birleştiren son işlem geliştirmek.
+3. HEALTH_INFORMATION için kişiye bağlılık ve olumsuzluk bilgisini koruyan sağlık ontolojisi veya özel NER modeli değerlendirmek.
+4. Kuruma ait gerçek poliçe ve hasar numarası biçimlerini konfigürasyondan yönetmek.
+5. Geliştirme sırasında görülmemiş, kurum onaylı ve elle etiketli ayrı bir kör test kümesi oluşturmak.
+6. GPU destekli hedef ortamda soğuk/ısınmış gecikme, RAM ve VRAM kullanımını ölçmek.

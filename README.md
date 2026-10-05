@@ -38,7 +38,7 @@ $env:HF_HUB_OFFLINE = '1'
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-İlk komut maskelenmiş metni ve bulunan alanların konumlarını gösterir. İkinci komut 17 sentetik örnekte seçilen katmanların sonucunu yazdırır. Üçüncü komut ölçümleri `docs/benchmark_results.json` dosyasına kaydeder. Dördüncü komut otomatik testleri çalıştırır. Yalnız kural katmanı için `--engines rules`, yalnız Presidio için `--engines presidio`, yalnız Türkçe NER için `--engines ner` seçilebilir.
+İlk komut maskelenmiş metni ve bulunan alanların konumlarını gösterir. İkinci komut sentetik test kümesinde seçilen katmanların sonucunu yazdırır. Üçüncü komut ölçümleri `docs/benchmark_results.json` dosyasına kaydeder. Dördüncü komut otomatik testleri çalıştırır. Yalnız kural katmanı için `--engines rules`, yalnız Presidio için `--engines presidio`, yalnız Türkçe NER için `--engines ner` seçilebilir.
 
 Yeni bir bilgisayarda Python 3.12 sanal ortamı oluşturup `pip install -e '.[presidio,models]'` ile bağımlılıklar kurulabilir. Model ağırlıkları ayrıca indirilir; kurumsal ortamda önce onaylı dosyalar yerel depoya alınmalı ve `ANON_NER_MODEL` ile `ANON_GLINER_MODEL` yerel dizinlere yöneltilmelidir.
 
@@ -81,7 +81,7 @@ CLI kullanımında `--local-llm-model qwen3:4b`, analiz notebook'unda ise `LOCAL
 
 ## Veri ve ölçüm
 
-`data/synthetic_tr.jsonl` 17 sentetik metin ve karakter konumlu 23 altın etiket içerir. `data/build_dataset.py` konumları yeniden üretir. Değerlendirme aynı `start`, `end` ve `label` üçlüsünün tam eşleşmesini sayar. Bu veri geliştirme sırasında kullanıldığı için ölçülen skor genel Türkçe ya da üretim başarısını göstermez. Gerçekçi değerlendirme için ayrı, kurum onaylı ve elle etiketli kör test kümesi gerekir.
+`data/synthetic_tr.jsonl` 110 sentetik metin ve karakter konumlu 121 altın etiket içerir. Kümede 92 pozitif ve 18 negatif metin ile 11 entity sınıfı bulunur. `data/build_dataset.py` checksum geçerli sentetik TCKN/IBAN değerlerini ve karakter konumlarını yeniden üretir. Değerlendirme aynı `start`, `end` ve `label` üçlüsünün tam eşleşmesini sayar. Bu veri geliştirme sırasında kullanıldığı için ölçülen skor genel Türkçe ya da üretim başarısını göstermez. Gerçekçi değerlendirme için ayrı, kurum onaylı ve elle etiketli kör test kümesi gerekir.
 
 ## Kısıtlar
 
